@@ -154,7 +154,6 @@ void SoftCore::PrepareSIMT(BlockFuncPtr &currentBlock)
 void SoftCore::InitSIMTRegInfo(BlockFuncPtr &currentBlock)
 {
     currentBlock->execLane = currentBlock->GetCurrentGroupIters(currentBlock->completedBodyIters, config.laneNum);
-    std::min(config.laneNum, currentBlock->totalBodyIters - currentBlock->completedBodyIters);
     currentBlock->localArchStatus.InitPredMask(config.laneNum, currentBlock->execLane);
     currentBlock->localArchStatus.InitVectorGeneralReg(config.laneNum, config.vectorMaxIndexDistance,
                                                        config.vectorMaxOutputNum, currentBlock->vregMode);

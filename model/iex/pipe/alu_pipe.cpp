@@ -571,7 +571,7 @@ uint32_t ALUPipe::getIterCycles(const SimInst& inst) const
     }
     if (top->core->IsVectorIex(top->machineType)) {
         auto exec_unit = getExecUnit(inst);
-        if ((exec_unit == IexExecUnit::FDIV)) {
+        if (exec_unit == IexExecUnit::FDIV) {
             // override by config
             return top->configs.simt_iex_fdiv_iter_cycles;
         }

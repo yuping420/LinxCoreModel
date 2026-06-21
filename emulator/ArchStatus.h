@@ -94,7 +94,7 @@ struct Layer2ArchStatus {
     {
         std::vector<bool> res;
         for (auto &it : predMask) {
-            res.emplace_back(it.GetMask());
+            res.push_back(it.GetMask());
         }
         return res;
     }

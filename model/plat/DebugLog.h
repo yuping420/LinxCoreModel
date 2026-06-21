@@ -9,6 +9,7 @@
 #include <mutex>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "include/SimSys.h"
 
@@ -237,16 +238,27 @@ private:
         result += " ";
     }
 
-    template<typename... Args>
-    static std::string FormatString(const char* format, Args... args)
+    template<typename T>
+    static const T& FormatArg(const T& arg)
     {
-        int size = snprintf(nullptr, 0, format, args...) + 1; // +1 给 '\0'
+        return arg;
+    }
+
+    static const char* FormatArg(const std::string& arg)
+    {
+        return arg.c_str();
+    }
+
+    template<typename... Args>
+    static std::string FormatString(const char* format, const Args&... args)
+    {
+        int size = snprintf(nullptr, 0, format, FormatArg(args)...) + 1; // +1 给 '\0'
         if (size <= 0) {
             return "[Format Error]";
         }
 
         std::vector<char> buf(size);
-        snprintf(buf.data(), size, format, args...);
+        snprintf(buf.data(), size, format, FormatArg(args)...);
         return std::string(buf.data());
     }
 

@@ -17,6 +17,7 @@
 #include <vector>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -25,12 +26,47 @@
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
+#if __has_include(<sys/sysinfo.h>)
 #include <sys/sysinfo.h>
+#define LINXCOREMODEL_HAS_HOST_SYSINFO 1
+#else
+#define LINXCOREMODEL_HAS_HOST_SYSINFO 0
+struct sysinfo {
+    long uptime;
+    unsigned long loads[3];
+    unsigned long totalram;
+    unsigned long freeram;
+    unsigned long sharedram;
+    unsigned long bufferram;
+    unsigned long totalswap;
+    unsigned long freeswap;
+    unsigned short procs;
+    unsigned short pad;
+    unsigned long totalhigh;
+    unsigned long freehigh;
+    unsigned int mem_unit;
+};
+
+static inline int sysinfo(struct sysinfo* info)
+{
+    if (info == nullptr) {
+        return -1;
+    }
+    std::memset(info, 0, sizeof(*info));
+    info->mem_unit = 1;
+    return 0;
+}
+#endif
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <sys/utsname.h>
+#if __has_include(<sched.h>)
+#include <sched.h>
+#endif
+#if __has_include(<linux/unistd.h>)
 #include <linux/unistd.h>
+#endif
 #include <signal.h>
 
 #include "Memory.h"
@@ -389,7 +425,7 @@ class AddressType
 
 public:
     constexpr AddressType(uint64_t v) : _v(v) {}
-    constexpr AddressType(void *v) : _v(reinterpret_cast<uint64_t>(v)) {}
+    AddressType(void *v) : _v(reinterpret_cast<uint64_t>(v)) {}
     AddressType &operator=(uint64_t v) {
         _v = v;
         return *this;
@@ -398,13 +434,13 @@ public:
         _v = reinterpret_cast<uint64_t>(v);
         return *this;
     }
-    constexpr operator uint64_t() { return _v; }
-    constexpr operator void *() { return reinterpret_cast<void *>(_v); }
-    constexpr operator char *() { return reinterpret_cast<char *>(_v); }
+    constexpr operator uint64_t() const { return _v; }
+    operator void *() const { return reinterpret_cast<void *>(_v); }
+    operator char *() const { return reinterpret_cast<char *>(_v); }
 };
 
 template <typename MemoryType>
-struct Aaccelssor;
+class Aaccelssor;
 
 template <>
 class Aaccelssor<SoftMemory>
@@ -510,24 +546,40 @@ public:
     }
 
     int Set_tid_address(int *tptr) {
+#if defined(SYS_set_tid_address)
         return syscall(SYS_set_tid_address, tptr);
+#else
+        (void)tptr;
+        return 0;
+#endif
     }
     int Sys_prlimit64(pid_t pid, int resource, const struct rlimit *new_limit,
                         struct rlimit *old_limit) {
+#if defined(SYS_prlimit64)
         return syscall(SYS_prlimit64, pid, resource, new_limit, old_limit);
+#else
+        (void)pid;
+        if (new_limit != nullptr) {
+            return setrlimit(resource, new_limit);
+        }
+        if (old_limit != nullptr) {
+            return getrlimit(resource, old_limit);
+        }
+        return 0;
+#endif
     }
 
     int Sys_write(int fd, const void* buffer, size_t count)
     {
-        return syscall(SYS_write, fd, buffer, count);
+        return static_cast<int>(write(fd, buffer, count));
     }
 
     int Sys_writev(int fd, const struct iovec *iov, int iovcnt) {
-        return syscall(SYS_writev, fd, iov, iovcnt);
+        return static_cast<int>(writev(fd, iov, iovcnt));
     }
 
     int Sys_ioctl(int fd, int request, void *data) {
-        return syscall(SYS_ioctl, fd, request, data);
+        return ioctl(fd, static_cast<unsigned long>(request), data);
     }
 
     int Sys_brk(uint64_t new_brk) {
@@ -701,7 +753,12 @@ private:
         std::cout << ", mode=0" << std::oct << arguments[3] << std::dec << std::endl;
         }
         /* int openat(int dirfd, const char *pathname, int flags, mode_t mode); */
-        int fd = syscall(SYS_openat, arguments[0], c_pathname, arguments[2], arguments[3]);
+#if defined(__APPLE__)
+        int fd = open(c_pathname, static_cast<int>(arguments[2]), static_cast<mode_t>(arguments[3]));
+#else
+        int fd = openat(static_cast<int>(arguments[0]), c_pathname,
+                        static_cast<int>(arguments[2]), static_cast<mode_t>(arguments[3]));
+#endif
         if (fd == -1) {
             std::cout << "ecall warnning: sys_openat function failed! errno: " << errno << " "<< strerror(errno)<< std::endl;
             returnValue = -1;
@@ -712,7 +769,7 @@ private:
 
     HANDLER(lseek)
     {
-        int ret = syscall(SYS_lseek, arguments[0], arguments[1], arguments[2]);
+        int ret = static_cast<int>(lseek(arguments[0], arguments[1], arguments[2]));
         if (ret == -1) {
             std::cout << "ecall warnning: sys_lseek function failed! errno: " << errno << " "<< strerror(errno)<< std::endl;
             returnValue = -1;
@@ -737,7 +794,7 @@ private:
             p_iov[i].iov_len = len;
         }
 
-        int ret = syscall(SYS_readv, fd, p_iov, iovcnt);
+        int ret = static_cast<int>(readv(fd, p_iov, iovcnt));
 
         // write iov to guest
 
@@ -763,7 +820,7 @@ private:
 
     HANDLER(close)
     {
-        int ret = syscall(SYS_close, arguments[0]);
+        int ret = close(arguments[0]);
         if (SYSCALL_DEBUG) {
             std::cout << "SYSCALL: close" << std::endl;
         }
@@ -979,10 +1036,10 @@ struct sigaction {
     HANDLER(clock_gettime)
     {
         // int clock_gettime(clockid_t clockid, struct timespec *tp);
-        clockid_t clockid = arguments[0];
+        clockid_t clockid = static_cast<clockid_t>(arguments[0]);
         struct timespec ts;
 
-        int ret = syscall(SYS_clock_gettime, clockid, &ts);
+        int ret = clock_gettime(clockid, &ts);
         aaccelssor.Store(arguments[1], &ts, sizeof(struct timespec));
 
         if (ret == -1) {
@@ -1040,7 +1097,7 @@ struct sigaction {
 
         void* buf_tmp = (void*)malloc(count);
 
-        int ret = syscall(SYS_read, fd, buf_tmp, count);
+        int ret = static_cast<int>(read(fd, buf_tmp, count));
         if (SYSCALL_DEBUG) {
             std::cout << "SYSCALL: read" << std::endl;
         }
@@ -1060,6 +1117,7 @@ struct sigaction {
 
     HANDLER(sched_getaffinity)
     {
+#if defined(__linux__)
         // int sched_getaffinity(pid_t pid, size_t cpusetsize, cpu_set_t *mask);
         pid_t pid = arguments[0];
         size_t cpusetsize = arguments[1];
@@ -1081,11 +1139,20 @@ struct sigaction {
         }
 
         return;
+#else
+        (void)arguments;
+        returnValue = 0;
+        return;
+#endif
     }
 
     HANDLER(gettid)
     {
+#if defined(__linux__) && defined(SYS_gettid)
         int ret = syscall(SYS_gettid);
+#else
+        int ret = static_cast<int>(getpid());
+#endif
         returnValue = ret;
     }
 
@@ -1093,7 +1160,7 @@ struct sigaction {
     {
         // function prototype: int fchdir(int fd);
         int fd = arguments[0];
-        int ret = syscall(SYS_fchdir, fd);
+        int ret = fchdir(fd);
         if (ret == -1) {
             std::cout << "ecall warnning: sys_fchdir function failed! errno: "
                       << errno << " "<< strerror(errno)<< std::endl;
@@ -1110,7 +1177,7 @@ struct sigaction {
         int fd = arguments[0];
         struct stat* buf = (struct stat*)malloc(sizeof(struct stat));
         aaccelssor.Load(arguments[1], buf, sizeof(struct stat));
-        int ret = syscall(SYS_fstat, fd, buf);
+        int ret = fstat(fd, buf);
         aaccelssor.Store(arguments[1], buf, sizeof(struct stat));
         if (ret == -1) {
             std::cout << "ecall warnning: sys_fstat function failed! errno: "

@@ -3503,7 +3503,7 @@ uint8_t bfloat16_to_e6m2(bfloat16 f, float_status *status)
 {
     FloatRoundMode rm = status->float_rounding_mode;
     uint16_t bf16;
-    memcpy(&bf16, f, sizeof(bf16));
+    memcpy(&bf16, &f, sizeof(bf16));
 
     uint32_t sign = (bf16 >> 15) & 1u;
     uint32_t bexp = (bf16 >> 7) & 0xFFu;

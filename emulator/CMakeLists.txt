@@ -9,14 +9,23 @@ list(FILTER EMULATOR_SRC EXCLUDE REGEX ".*/main\\.cpp$")
 
 # 创建模拟器库
 add_library(soft_core STATIC ${EMULATOR_SRC})
+target_compile_options(soft_core PRIVATE
+    -Wno-error=format
+    -Wno-error=nontrivial-memcall
+)
 target_include_directories(soft_core PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/softfloat/include
     ${CMAKE_SOURCE_DIR}/binutils/include/elf
     ${CMAKE_SOURCE_DIR}/binutils/rapidjson/include/rapidjson
+    ${RAPIDJSON_INCLUDE_DIR}
+    ${LIBELF_INCLUDE_DIR}
+    ${LIBELF_GELF_INCLUDE_DIR}
+    ${LIBELF_ROOT_INCLUDE_DIR}
 )
 target_link_libraries(soft_core PUBLIC
     isa_blockisa
     third_party
     configs
+    ${LINXCOREMODEL_LIBELF}
 )

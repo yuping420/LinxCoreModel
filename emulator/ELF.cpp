@@ -1,6 +1,5 @@
 #include "ELF.h"
 
-#include <bfd.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -11,8 +10,69 @@
 #include <map>
 #include <stack>
 #include <string>
-#include <sys/auxv.h>
 #include <unistd.h>
+
+#if defined(__APPLE__)
+#include <crt_externs.h>
+#endif
+
+#if __has_include(<sys/auxv.h>)
+#include <sys/auxv.h>
+#define LINXCOREMODEL_HAS_HOST_AUXV 1
+#else
+#define LINXCOREMODEL_HAS_HOST_AUXV 0
+#ifndef AT_NULL
+#define AT_NULL 0
+#endif
+#ifndef AT_PHDR
+#define AT_PHDR 3
+#endif
+#ifndef AT_PHENT
+#define AT_PHENT 4
+#endif
+#ifndef AT_PHNUM
+#define AT_PHNUM 5
+#endif
+#ifndef AT_PAGESZ
+#define AT_PAGESZ 6
+#endif
+#ifndef AT_BASE
+#define AT_BASE 7
+#endif
+#ifndef AT_FLAGS
+#define AT_FLAGS 8
+#endif
+#ifndef AT_ENTRY
+#define AT_ENTRY 9
+#endif
+#ifndef AT_UID
+#define AT_UID 11
+#endif
+#ifndef AT_EUID
+#define AT_EUID 12
+#endif
+#ifndef AT_GID
+#define AT_GID 13
+#endif
+#ifndef AT_EGID
+#define AT_EGID 14
+#endif
+#ifndef AT_CLKTCK
+#define AT_CLKTCK 17
+#endif
+#ifndef AT_HWCAP
+#define AT_HWCAP 16
+#endif
+#ifndef AT_SECURE
+#define AT_SECURE 23
+#endif
+#ifndef AT_RANDOM
+#define AT_RANDOM 25
+#endif
+#ifndef AT_EXECFN
+#define AT_EXECFN 31
+#endif
+#endif
 
 #include "SoftCore.h"
 
@@ -50,6 +110,26 @@ static void Log(const char* format, Args... args)
     if (ENABLE_LOG) {
         printf(format, args...);
     }
+}
+
+static uint64_t HostAuxVal(uint64_t type)
+{
+#if LINXCOREMODEL_HAS_HOST_AUXV
+    return static_cast<uint64_t>(getauxval(static_cast<unsigned long>(type)));
+#else
+    (void)type;
+    return 0;
+#endif
+}
+
+static char** HostEnviron()
+{
+#if defined(__APPLE__)
+    return *_NSGetEnviron();
+#else
+    extern char** environ;
+    return environ;
+#endif
 }
 
 static void WriteByte(uint64_t addr, uint8_t val, SoftMemory *arg)
@@ -90,7 +170,7 @@ static void WriteAuxTable(SoftMemory *arg, uint64_t *spAddr, PrepareAuxData &aux
     constexpr uint64_t ELF_HWCAP = 1;
     writeIdAndVal(AT_NULL, ZERO);
     writeIdAndVal(AT_EXECFN, auxData.ptrFileString);
-    writeIdAndVal(AT_SECURE, getauxval(AT_SECURE));
+    writeIdAndVal(AT_SECURE, HostAuxVal(AT_SECURE));
     writeIdAndVal(AT_RANDOM, auxData.ptrRandomBytes);
     writeIdAndVal(AT_CLKTCK, sysconf(_SC_CLK_TCK));
     writeIdAndVal(AT_HWCAP, ELF_HWCAP);
@@ -176,7 +256,7 @@ static void InitArgv(std::vector<std::string> &spArgv, int argc, const std::vect
 static void InitEnvp(std::vector<std::string> &spEnvp)
 {
     Log("%s\n", "envp: ");
-    for (char** env = __environ; *env != nullptr; ++env) {
+    for (char** env = HostEnviron(); env != nullptr && *env != nullptr; ++env) {
         spEnvp.emplace_back(*env);
         Log("%s\n", *env);
     }

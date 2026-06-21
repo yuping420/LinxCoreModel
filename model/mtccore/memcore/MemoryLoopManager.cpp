@@ -4,7 +4,11 @@
 #include "vectorcore/GROB.h"
 #include "core/interface.h"
 #include "iex/pipe/iex_pipe.h"
+#if defined GENERIC_SOC || defined GENERIC_SOC_NEW
 #include "generic_soc/soc_wrapper.h"
+#else
+#include "soc/soc_wrapper.h"
+#endif
 
 
 namespace JCore {

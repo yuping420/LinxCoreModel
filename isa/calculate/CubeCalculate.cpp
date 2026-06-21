@@ -178,7 +178,7 @@ bool CubeCalculate::SwitchCD2ZN(std::vector<uint64_t>& matrix,
             size_t startRow = blockI * blockRow;
             size_t startCol = blockJ * blockCol;
 
-            auto processColumn = [&finalMatrix, &matrix, &startRow, &startCol, &totalRow, &blockCol, &blockRow,
+            auto processColumn = [&finalMatrix, &matrix, &startRow, &startCol, &totalRow, &blockRow,
                                 &resultIndex] (int col) {
                 for (size_t row = 0; row < blockRow; ++row) {
                     size_t actualRow = startRow + row;
@@ -1000,4 +1000,3 @@ uint64_t CubeCalculate::GetElementValue(uint64_t origin, uint64_t ea, uint64_t e
     return static_cast<uint64_t>(result);
 }
 } // namespace JCore
-

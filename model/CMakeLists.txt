@@ -13,6 +13,20 @@ endif()
 
 # 创建模型库
 add_library(model_lib STATIC ${MODEL_SRC})
+target_compile_options(model_lib PRIVATE
+    -Wno-error=c++17-extensions
+    -Wno-error=defaulted-function-deleted
+    -Wno-error=delete-non-abstract-non-virtual-dtor
+    -Wno-error=final-dtor-non-final-class
+    -Wno-error=format
+    -Wno-error=inconsistent-missing-override
+    -Wno-error=mismatched-tags
+    -Wno-error=parentheses-equality
+    -Wno-error=unused-const-variable
+    -Wno-error=unused-lambda-capture
+    -Wno-error=unused-private-field
+    -Wno-error=unused-but-set-variable
+)
 target_include_directories(model_lib PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -78,4 +92,3 @@ else()
         message(STATUS "SOC support disabled for model_lib (not x86 platform)")
     endif()
 endif()
-

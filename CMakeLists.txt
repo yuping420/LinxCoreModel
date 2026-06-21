@@ -11,11 +11,48 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(GlobalSettings)
 include(SOCSetup)
 
+find_path(RAPIDJSON_INCLUDE_DIR document.h
+    HINTS /opt/homebrew/include /opt/homebrew/opt/rapidjson/include
+    PATH_SUFFIXES rapidjson
+)
+find_path(LIBELF_INCLUDE_DIR libelf.h
+    HINTS /opt/homebrew/include /opt/homebrew/opt/libelf/include
+    PATH_SUFFIXES libelf
+)
+find_path(LIBELF_GELF_INCLUDE_DIR gelf.h
+    HINTS /opt/homebrew/include /opt/homebrew/opt/libelf/include
+    PATH_SUFFIXES libelf
+)
+find_path(LIBELF_ROOT_INCLUDE_DIR libelf/libelf.h
+    HINTS /opt/homebrew/include /opt/homebrew/opt/libelf/include
+)
+find_library(LIBELF_LIBRARY elf HINTS /opt/homebrew/lib /opt/homebrew/opt/libelf/lib)
+if(LIBELF_LIBRARY)
+    set(LINXCOREMODEL_LIBELF ${LIBELF_LIBRARY})
+else()
+    set(LINXCOREMODEL_LIBELF elf)
+endif()
+
 # 平台检测
 gf_detect_platform()
 
 # 设置全局编译选项
 gf_set_global_compiler_options()
+
+set(LINXCOREMODEL_CLANG_COMPAT_OPTIONS
+    -Wno-error=c++17-extensions
+    -Wno-error=defaulted-function-deleted
+    -Wno-error=delete-non-abstract-non-virtual-dtor
+    -Wno-error=final-dtor-non-final-class
+    -Wno-error=format
+    -Wno-error=inconsistent-missing-override
+    -Wno-error=mismatched-tags
+    -Wno-error=parentheses-equality
+    -Wno-error=unused-const-variable
+    -Wno-error=unused-lambda-capture
+    -Wno-error=unused-private-field
+    -Wno-error=unused-but-set-variable
+)
 
 if (GENERIC_SOC)
     include(SOCSetupGeneric)
@@ -128,14 +165,15 @@ message(STATUS "Creating executable targets...")
 
 # gfrun - 功能模拟器
 add_executable(gfrun emulator/main.cpp)
-target_link_libraries(gfrun PRIVATE soft_core isa_blockisa softfloat -lelf)
+target_link_libraries(gfrun PRIVATE soft_core isa_blockisa softfloat ${LINXCOREMODEL_LIBELF})
+target_compile_options(gfrun PRIVATE ${LINXCOREMODEL_CLANG_COMPAT_OPTIONS})
 message(STATUS "Created target: gfrun")
 
 # gfsim
 if (GENERIC_SOC)
     # gfsim - CA 模拟器
     add_executable(gfsim model/main.cpp model/generic_soc/soc_wrapper.cpp)
-    target_link_libraries(gfsim PRIVATE soft_core model_lib isa_blockisa softfloat -lelf)
+    target_link_libraries(gfsim PRIVATE soft_core model_lib isa_blockisa softfloat ${LINXCOREMODEL_LIBELF})
     target_compile_definitions(gfsim PRIVATE $<$<BOOL:${GENERIC_SOC}>:GENERIC_SOC>)
 
     message(STATUS "Created target: gfsim")
@@ -154,7 +192,7 @@ if (GENERIC_SOC)
     endif()
 elseif(GENERIC_SOC_NEW)
     add_executable(gfsim model/main.cpp model/generic_soc/soc_wrapper.cpp)
-    target_link_libraries(gfsim PRIVATE soft_core model_lib isa_blockisa softfloat -lelf)
+    target_link_libraries(gfsim PRIVATE soft_core model_lib isa_blockisa softfloat ${LINXCOREMODEL_LIBELF})
     target_compile_definitions(gfsim PRIVATE $<$<BOOL:${GENERIC_SOC_NEW}>:GENERIC_SOC_NEW>)
 
     message(STATUS "Created target: gfsim")
@@ -174,7 +212,7 @@ elseif(GENERIC_SOC_NEW)
 else()
     # gfsim - CA 模拟器
     add_executable(gfsim model/main.cpp model/soc/soc_wrapper.cpp)
-    target_link_libraries(gfsim PRIVATE soft_core model_lib isa_blockisa softfloat -lelf)
+    target_link_libraries(gfsim PRIVATE soft_core model_lib isa_blockisa softfloat ${LINXCOREMODEL_LIBELF})
     message(STATUS "Created target: gfsim")
 
     # 链接P688 SOC 库到在根目录中创建的目标
@@ -189,6 +227,10 @@ else()
     elseif(GRAPHFLOW_X86_SUPPORT)
         message(WARNING "SOC support enabled but SOC libraries not available for root targets")
     endif()
+endif()
+
+if(TARGET gfsim)
+    target_compile_options(gfsim PRIVATE ${LINXCOREMODEL_CLANG_COMPAT_OPTIONS})
 endif()
 
 message(STATUS "CMake configuration completed suaccelssfully")

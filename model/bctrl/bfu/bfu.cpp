@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <list>
+#include <memory>
 #include <vector>
 
 #include "bctrl/bfu/bfu_common.h"
@@ -2044,8 +2045,8 @@ void BFU::DeliverStall(uint32_t stid) {
     DeliverFBInfo selected_info = DeliverFBInfo();
     uint32_t global_idx = pipe[F4].GetFirstValidFBIdx();
     uint32_t fb_num = 0;
-    bool select_pipe[cfg.local_pipe_num] = {false};
-    bool select_fb_global[cfg.bfu_ntaken] = {false};
+    std::unique_ptr<bool[]> select_pipe(new bool[cfg.local_pipe_num]());
+    std::unique_ptr<bool[]> select_fb_global(new bool[cfg.bfu_ntaken]());
     if (pipe[F4].state != NS_CORE::PipeState::INVALID && pipe[F4].fb[global_idx] &&
         pipe[F4].fb[global_idx]->stid != stid) {
         return;
@@ -2058,7 +2059,7 @@ void BFU::DeliverStall(uint32_t stid) {
         if (pipe[F4].state != NS_CORE::PipeState::INVALID &&
             global_idx < cfg.bfu_ntaken && pipe[F4].fb[global_idx]) {
             auto &fb = pipe[F4].fb[global_idx];
-            bool deliver = CheckOldest(fb, select_fb_global, select_pipe);
+            bool deliver = CheckOldest(fb, select_fb_global.get(), select_pipe.get());
             if (deliver) {
                 // Selected
                 selected_info.vld = true;
@@ -2101,7 +2102,7 @@ void BFU::DeliverStall(uint32_t stid) {
             if (fb == nullptr || select_pipe[i]) {
                 continue;
             }
-            bool deliver = CheckOldest(fb, select_fb_global, select_pipe);
+            bool deliver = CheckOldest(fb, select_fb_global.get(), select_pipe.get());
             if (!deliver) {
                 continue;
             }
@@ -2709,9 +2710,9 @@ void BFU::ReportStat() {
     }
     if (cfg.report_header_footprint) {
         GetSim()->getRpt()->ReportTitle("Header Footprint Count");
-        GetSim()->getRpt()->ReportVal("Header footprint (cmt)", hdr_fp_cmt.size());
-        GetSim()->getRpt()->ReportVal("Header footprint (spec)", hdr_fp_spec.size());
-        GetSim()->getRpt()->ReportVal("Header footprint (prefetch)", hdr_fp_pref.size());
+        GetSim()->getRpt()->ReportVal("Header footprint (cmt)", static_cast<uint64_t>(hdr_fp_cmt.size()));
+        GetSim()->getRpt()->ReportVal("Header footprint (spec)", static_cast<uint64_t>(hdr_fp_spec.size()));
+        GetSim()->getRpt()->ReportVal("Header footprint (prefetch)", static_cast<uint64_t>(hdr_fp_pref.size()));
     }
 }
 

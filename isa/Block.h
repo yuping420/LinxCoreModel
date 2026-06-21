@@ -12,6 +12,8 @@
 namespace JCore {
 class Block {
 public:
+    virtual ~Block() = default;
+
     bool                                    bIsComplete = false; // The block is complete, not just executed.
     bool                                    bIsTemplate = false;
     bool                                    iotLast = false;   // 用于b.iot/b.ioti结束检查

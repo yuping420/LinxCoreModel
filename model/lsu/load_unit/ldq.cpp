@@ -10,7 +10,7 @@ namespace JCore {
 void ResolveQ::Build(uint32_t depth, uint32_t rslvNum)
 {
     capcity = depth;
-    rslvNum = rslvNum;
+    this->rslvNum = rslvNum;
 }
 
 void ResolveQ::Reset(void)

@@ -2,9 +2,9 @@
 
 #include "SoftCore.h"
 #include "ISA.h"
-#include "../../../isa/calculate/TileOpCommonCalc.h"
-#include "../../../isa/calculate/CubeCalculate.h"
-#include "../../../isa/ISACommon/DataType.h"
+#include "../../isa/calculate/TileOpCommonCalc.h"
+#include "../../isa/calculate/CubeCalculate.h"
+#include "../../isa/ISACommon/DataType.h"
 
 namespace JCore {
 
@@ -692,4 +692,3 @@ void SoftCore::ExecuteTEPL(BlockFuncPtr block)
     }
 }
 }
-

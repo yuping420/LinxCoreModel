@@ -15,8 +15,8 @@ bool SoftCore::ExecuteSysCall(BlockFuncPtr &currentBlock)
         archStatus.gpr[2] = eca();
 
         MInst minst;
-        uint64_t tpc = 0;
-        uint32_t id = 0;
+        [[maybe_unused]] uint64_t tpc = 0;
+        [[maybe_unused]] uint32_t id = 0;
 
         std::unordered_map<int, Opcode> get_st_op = {
             {1,    Opcode::OP_SBI},
@@ -132,8 +132,8 @@ bool SoftCore::ExecuteSysCall(BlockFuncPtr &currentBlock)
     tmp.gpr[2] = archStatus.gpr[2];
 
     MInst minst;
-    uint64_t tpc = 0;
-    uint32_t id = 0;
+    [[maybe_unused]] uint64_t tpc = 0;
+    [[maybe_unused]] uint32_t id = 0;
     for (int i = 0; i < static_cast<int>(GPR::GPR_COUNT); i++) {
         minst = MInst();
         minst.check = false;

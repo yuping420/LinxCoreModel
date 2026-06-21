@@ -10,7 +10,7 @@ namespace JCore {
 void MtcResolveQ::Build(uint32_t depth, uint32_t rslvNum)
 {
     capcity = depth;
-    rslvNum = rslvNum;
+    this->rslvNum = rslvNum;
 }
 
 void MtcResolveQ::Reset(void)
@@ -1192,7 +1192,7 @@ bool MtcLDQInfo::PickPriority(PMTCLUEntryInfo &pickE, MTCLUEntryInfo &e, LSUType
         && (pickE->dataHit() == e.dataHit())) {
         return true;
     }
-    if ((type == LSUType::MEMORY_LSU)) {
+    if (type == LSUType::MEMORY_LSU) {
         if ((e.memReq.opcode == Opcode::OP_TLD) && (pickE->memReq.opcode == Opcode::OP_TLD)
             && GetSim()->core->configs.mtc_tload_retire_in_order) {
             if (LessEqual(e.memReq.bid, e.memReq.rid, e.memReq.subrid,

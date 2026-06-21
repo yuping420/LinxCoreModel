@@ -1,12 +1,12 @@
 #include <cstdint>
 #include <iomanip>
-#include "../../../isa/ISACommon/DataType.h"
+#include "../../isa/ISACommon/DataType.h"
 #include "ISA.h"
 #include "SoftCore.h"
 #include "softfloat-types.h"
 #include "softfloat.h"
-#include "../../../isa/calculate/CubeCalculate.h"
-#include "../../../isa/calculate/FloatPointUtils.h"
+#include "../../isa/calculate/CubeCalculate.h"
+#include "../../isa/calculate/FloatPointUtils.h"
 
 namespace JCore {
 
@@ -20,7 +20,7 @@ const int FIXED_MATRIX_ZOOM_SIZE = 32;
 // 分型中, 缩放矩阵的小矩阵的总大小为16B(特殊情况, 在HiF4格式下)
 const int FIXED_MATRIX_ZOOM_HIF4_SIZE = 32;
 
-const int COMPRESSION_BYTE = 8;
+[[maybe_unused]] const int COMPRESSION_BYTE = 8;
 
 std::vector<uint64_t> SoftCore::LoadFromAcc(DataType dataType, size_t m, size_t n, uint64_t tileBaseAddr,
                                             uint64_t thread)

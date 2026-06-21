@@ -2,8 +2,19 @@
 # coding: utf-8
 import os
 import pathlib
-import toml
 import logging
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import toml as _toml
+
+    def load_toml(path_to_toml):
+        return _toml.load(path_to_toml)
+else:
+    def load_toml(path_to_toml):
+        with open(path_to_toml, "rb") as f:
+            return tomllib.load(f)
 
 # 设置模块级别的 logger
 logger = logging.getLogger(__name__)
@@ -30,7 +41,7 @@ def process_toml(path_to_toml):
     if 'generic_soc' in str(path_to_toml):
         return
     assert(os.path.isfile(path_to_toml))
-    d = toml.load(path_to_toml)
+    d = load_toml(path_to_toml)
 
     logger.info("processing %s", path_to_toml)
     assert(len(list(d.keys()))==1)

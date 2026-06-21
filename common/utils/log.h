@@ -185,8 +185,8 @@ private:
     std::stringstream ssRich;
     LoggerLevel level{LoggerLevel::ERROR};
     bool enableLog = false;
-    Unit currentUnit{Unit::UNKNOW_CORE};  // 默认单元
-    Stage currentStage{Stage::NA};
+    [[maybe_unused]] Unit currentUnit{Unit::UNKNOW_CORE};  // 默认单元
+    [[maybe_unused]] Stage currentStage{Stage::NA};
 
 public:
     Logger(LoggerLevel levelIn, [[maybe_unused]] const std::string &func, [[maybe_unused]] int line) : level(levelIn) {

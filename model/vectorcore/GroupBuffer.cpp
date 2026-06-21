@@ -46,7 +46,7 @@ void GroupBuffer::Alloc()
     if (curReq.vld) {
         req = curReq;
     } else {
-        req = std::move(m_lm2GBufferQ->Read());
+        req = m_lm2GBufferQ->Read();
         if (req.blockCmd->biqType == BIQType::VEC_IQ) {
             m_maskFile->Alloc(req.blockCmd->bid, req.shapelpinfo.lastGroupNum, req.blockCmd->stid);
         }

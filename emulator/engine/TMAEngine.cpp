@@ -1,8 +1,9 @@
 #include <cstdint>
 #include <iomanip>
+#include <vector>
 #include "SoftCore.h"
-#include "../../../isa/ISACommon/DataType.h"
-#include "../../../isa/calculate/TileOpCommonCalc.h"
+#include "../../isa/ISACommon/DataType.h"
+#include "../../isa/calculate/TileOpCommonCalc.h"
 #include "ISA.h"
 
 namespace JCore {
@@ -98,7 +99,7 @@ void SoftCore::ExecuteTMOV(BlockFuncPtr block, TcopyShape& tCopy)
 
 void SoftCore::ExecuteTLOAD(BlockFuncPtr block, TcopyShape& tCopy)
 {
-    uint64_t tileBaseAddr[config.tileRegMaxOutputNum];
+    std::vector<uint64_t> tileBaseAddr(config.tileRegMaxOutputNum);
     for (size_t i = 0; i < tCopy.tileRegDstNum; ++i) {
         tileBaseAddr[i] = block->dstTile[i]->baseAddr;
     }
@@ -138,7 +139,7 @@ void SoftCore::ExecuteTLOAD(BlockFuncPtr block, TcopyShape& tCopy)
         }
     };
 
-    auto doTileStore = [&block, &tCopy, this, &eleSize, &writtenData](uint64_t tileBase, uint64_t lineOffset,
+    auto doTileStore = [&block, this, &eleSize](uint64_t tileBase, uint64_t lineOffset,
                                                               uint64_t idx, uint64_t data) {
         uint64_t addr = tileBase + lineOffset + eleSize * idx;
         if (verbose && LoggerManager::GetManager().level <= LoggerLevel::DETAIL) {
@@ -253,7 +254,7 @@ void SoftCore::ExecuteTLOAD(BlockFuncPtr block, TcopyShape& tCopy)
 
 void SoftCore::ExecuteTSTORE(BlockFuncPtr block, TcopyShape& tCopy)
 {
-    uint64_t tileBaseAddr[config.tileRegMaxInputNum];
+    std::vector<uint64_t> tileBaseAddr(config.tileRegMaxInputNum);
     for (size_t i = 0; i < tCopy.tileRegSrcNum; ++i) {
         tileBaseAddr[i] = block->srcTile[i]->baseAddr;
     }

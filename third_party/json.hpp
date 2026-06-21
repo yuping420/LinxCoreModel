@@ -10,7 +10,7 @@
 #include <functional> // hash, less
 #include <initializer_list> // initializer_list
 #include <iosfwd> // istream, ostream
-#include <iterator> // random_aaccelss_iterator_tag
+#include <iterator> // random_access_iterator_tag
 #include <memory> // unique_ptr
 #include <numeric> // accumulate
 #include <string> // string, stoi, to_string
@@ -2687,7 +2687,7 @@ constexpr T static_const<T>::value;
 // #include <nlohmann/detail/iterators/iterator_traits.hpp>
 
 
-#include <iterator> // random_aaccelss_iterator_tag
+#include <iterator> // random_access_iterator_tag
 
 // #include <nlohmann/detail/meta/void_t.hpp>
 
@@ -2743,7 +2743,7 @@ struct iterator_traits < T, enable_if_t < !std::is_pointer<T>::value >>
 template<typename T>
 struct iterator_traits<T*, enable_if_t<std::is_object<T>::value>>
 {
-    using iterator_category = std::random_aaccelss_iterator_tag;
+    using iterator_category = std::random_access_iterator_tag;
     using value_type = T;
     using difference_type = ptrdiff_t;
     using pointer = T*;
@@ -4627,7 +4627,7 @@ std::size_t hash(const BasicJsonType& j)
 #include <cstdio> //FILE *
 #include <cstring> // strlen
 #include <istream> // istream
-#include <iterator> // begin, end, iterator_traits, random_aaccelss_iterator_tag, distance, next
+#include <iterator> // begin, end, iterator_traits, random_access_iterator_tag, distance, next
 #include <memory> // shared_ptr, make_shared, addressof
 #include <numeric> // accumulate
 #include <string> // string, char_traits
@@ -5056,7 +5056,7 @@ class span_input_adapter
 
     template<class IteratorType,
              typename std::enable_if<
-                 std::is_same<typename iterator_traits<IteratorType>::iterator_category, std::random_aaccelss_iterator_tag>::value,
+                 std::is_same<typename iterator_traits<IteratorType>::iterator_category, std::random_access_iterator_tag>::value,
                  int>::type = 0>
     span_input_adapter(IteratorType first, IteratorType last)
         : ia(input_adapter(first, last)) {}
@@ -10620,7 +10620,7 @@ template<typename BasicJsonType> struct internal_iterator
 // #include <nlohmann/detail/iterators/iter_impl.hpp>
 
 
-#include <iterator> // iterator, random_aaccelss_iterator_tag, bidirectional_iterator_tag, advance, next
+#include <iterator> // iterator, random_access_iterator_tag, bidirectional_iterator_tag, advance, next
 #include <type_traits> // conditional, is_const, remove_const
 
 namespace nlohmann
@@ -25026,7 +25026,7 @@ if no parse error occurred.
 @since version 1.0.0
 */
 JSON_HEDLEY_NON_NULL(1)
-inline nlohmann::json operator "" _json(const char* s, std::size_t n)
+inline nlohmann::json operator""_json(const char* s, std::size_t n)
 {
     return nlohmann::json::parse(s, s + n);
 }
@@ -25045,7 +25045,7 @@ object if no parse error occurred.
 @since version 2.0.0
 */
 JSON_HEDLEY_NON_NULL(1)
-inline nlohmann::json::json_pointer operator "" _json_pointer(const char* s, std::size_t n)
+inline nlohmann::json::json_pointer operator""_json_pointer(const char* s, std::size_t n)
 {
     return nlohmann::json::json_pointer(std::string(s, n));
 }

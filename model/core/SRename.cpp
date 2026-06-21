@@ -794,9 +794,9 @@ void StackRenameUnit::Build()
     // Build stack physical register
     StackRenameTableInfo tInfo;
     for (uint32_t i = 0; i < configs.sp_preg_count; i++) {
-        current.freeList.emplace_back(true);
+        current.freeList.push_back(true);
         current.stackPtagReady.emplace_back(tInfo);
-        next.freeList.emplace_back(true);
+        next.freeList.push_back(true);
         next.stackPtagReady.emplace_back(tInfo);
     }
     historyEnable = configs.stack_history_enable;

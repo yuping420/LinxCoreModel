@@ -1,7 +1,15 @@
 #ifndef __ELF_LOAD_H__
 #define __ELF_LOAD_H__
 
+#if __has_include(<libelf/gelf.h>)
+#include <libelf/gelf.h>
+#elif __has_include(<gelf.h>)
+#include <gelf.h>
+#elif __has_include(<elf.h>)
 #include <elf.h>
+#else
+#error "ELF support requires libelf/gelf.h or elf.h"
+#endif
 #include <fstream>
 #include <iostream>
 #include <stdint.h>

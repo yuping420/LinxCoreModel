@@ -11,7 +11,7 @@ namespace JCore {
 
 class BacktraceImpl : public LazyValue<std::string> {
 public:
-    __always_inline BacktraceImpl(size_t skipFrames, size_t maxFrames) : callStack_(maxFrames, 0) {
+    inline BacktraceImpl(size_t skipFrames, size_t maxFrames) : callStack_(maxFrames, 0) {
         skipFrames += 1;
         auto nrFrames = static_cast<size_t>(::backtrace(callStack_.data(), static_cast<int>(callStack_.size())));
         skipFrames = std::min(skipFrames, nrFrames);

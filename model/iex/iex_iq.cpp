@@ -864,7 +864,7 @@ void RdPortControl::Build()
     mVrfPipeSrcRdPorts.resize(static_cast<uint32_t>(PipeSrcId::NUM));
     mVrfRdPortBanksInit.assign(mTop->configs.simt_iex_read_port_num, set<uint32_t>(begin(banks), end(banks)));
 
-    auto initSrcRdPorts = [this](const vector<size_t>& cfg, PipeSrcId pipeSrcId) {
+    auto initSrcRdPorts = [this](const vector<uint64_t>& cfg, PipeSrcId pipeSrcId) {
         mVrfPipeSrcRdPorts.at(static_cast<uint32_t>(pipeSrcId)) = vector<uint32_t>(begin(cfg), end(cfg));
     };
     for (uint32_t portId = 0; portId < mTop->configs.simt_iex_read_port_num; portId++) {

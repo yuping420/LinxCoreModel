@@ -134,7 +134,7 @@ struct addr SoftMemory::LoadElf(JsonElement& jsonElement, std::map<uint64_t, uin
 uint64_t SoftMemoryBank::DataLoad(uint64_t address, int width)
 {
     auto offset = address % MEM_ALIGN;
-    auto data = 0uL;
+    uint64_t data = 0;
     auto handleWidth = 0uL;
     if (offset + width > MEM_ALIGN) {
         handleWidth = MEM_ALIGN - offset;
@@ -341,7 +341,7 @@ uint64_t SoftMemory::Load(uint64_t address, int width, bool signedLoad)
         }
     };
     auto offset = address % SECTION_INTERVAL;
-    auto data = 0uL;
+    uint64_t data = 0;
     if (offset + width > SECTION_INTERVAL) {
         auto handleWidth = SECTION_INTERVAL - offset;
         auto ret = loadFromBank(address, handleWidth, 0);

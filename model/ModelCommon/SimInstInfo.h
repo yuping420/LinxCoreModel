@@ -212,7 +212,7 @@ struct GatherInfo {
     bool                    gather_stall = false;
 };
 
-class RFReqBus;
+struct RFReqBus;
 struct MemReqBus;
 struct PEResolveBus;
 class SimInstInfo : public JCore::MInst {
