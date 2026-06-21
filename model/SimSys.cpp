@@ -18,8 +18,6 @@ namespace JCore {
 namespace {
 constexpr uint64_t kLinxTestFinisherAddr = 0x10009000;
 constexpr uint16_t kLinxTestFinisherPass = 0x5555;
-constexpr uint16_t kLinxTestFinisherFail = 0x3333;
-constexpr uint16_t kLinxTestFinisherReset = 0x7777;
 }
 
 void SimSys::step() {
@@ -592,11 +590,8 @@ void SimSys::observeTestFinisher(uint64_t address, uint64_t data, int width)
             continue;
         }
         uint16_t status = static_cast<uint16_t>(testFinisherValue & 0xFFFFU);
-        if (status == kLinxTestFinisherPass || status == kLinxTestFinisherFail ||
-            status == kLinxTestFinisherReset) {
-            testFinisherSeen = true;
-            testFinisherFailed = (status != kLinxTestFinisherPass);
-        }
+        testFinisherSeen = true;
+        testFinisherFailed = (status != kLinxTestFinisherPass);
     }
 }
 
