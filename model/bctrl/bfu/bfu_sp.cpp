@@ -21,13 +21,15 @@ bool IsStdFallDescriptor(SimInst const& inst)
     if (!inst || inst->opcode != Opcode::OP_BSTART || inst->srcs.size() <= SRC1_IDX) {
         return false;
     }
-    return inst->srcs[SRC0_IDX]->data == static_cast<uint64_t>(BlockType::BLK_TYPE_STD) &&
+    return inst->codeLen == EncodeLen::ENL_W &&
+           inst->srcs[SRC0_IDX]->data == static_cast<uint64_t>(BlockType::BLK_TYPE_STD) &&
            inst->srcs[SRC1_IDX]->data == static_cast<uint64_t>(BranchType::BLK_BR_FALL);
 }
 
 bool IsInlineFixedTargetDescriptor(SimInst const& openHeader, SimInst const& inst)
 {
-    // LLVM can place an in-body STD/FALL descriptor after a DIRECT header.
+    // LLVM emits a 32-bit in-body STD/FALL descriptor in direct-boot finisher blocks.
+    // A compressed C.BSTART.STD after a direct header is still a real block boundary.
     return openHeader && openHeader->GetBranchType() == BranchType::BLK_BR_DIRECT &&
            IsStdFallDescriptor(inst);
 }
