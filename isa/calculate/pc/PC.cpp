@@ -18,7 +18,8 @@ static bool CalcInstAddTPC(MInst &inst)
     if (inst.srcs.size() != SRC1_IDX) {
         return false;
     }
-    inst.dsts[DST0_IDX]->data = inst.pc + inst.srcs[SRC0_IDX]->data;
+    constexpr uint64_t TPC_PAGE_MASK = ~0xfffULL;
+    inst.dsts[DST0_IDX]->data = (inst.pc & TPC_PAGE_MASK) + inst.srcs[SRC0_IDX]->data;
     return true;
 }
 
