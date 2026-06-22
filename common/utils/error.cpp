@@ -45,11 +45,11 @@ public:
                 return "Backtrace Failed";
             }
             std::stringstream ss;
+            ss << "stack:\n";
             for (size_t i = 0; i < callStack_.size(); i++) {
                 ParseFrame(ss, strings[i]);
             }
             free(strings);
-            ss.str("stack:"); // temporary error stack
             return ss.str();
         });
     }

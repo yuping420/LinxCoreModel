@@ -281,6 +281,8 @@ int elf_load(const char *filename, cb_mem_create fn_create, cb_mem_load fn_load,
     uint64_t spTop = 0;
     uint64_t spBottom = 0;
 
+    text_region.clear();
+
     if (elf_version (EV_CURRENT) == EV_NONE) {
         return 0;
     }
@@ -318,6 +320,9 @@ int elf_load(const char *filename, cb_mem_create fn_create, cb_mem_load fn_load,
             data = elf_getdata(scn, nullptr);
             printf("Memory: 0x%lx - 0x%lx (Size=%ldKB) [%s]\n", shdr->sh_addr, shdr->sh_addr + shdr->sh_size - 1,
                 shdr->sh_size / 1024, elf_strptr(e, shstrndx, shdr->sh_name));
+            if (shdr->sh_flags & SHF_EXECINSTR) {
+                text_region[shdr->sh_addr] = shdr->sh_addr + shdr->sh_size;
+            }
 
             if (!fn_create(arg, shdr->sh_addr, shdr->sh_size)) {
                 fprintf(stderr, "ERROR: Cannot allocate memory region\n");

@@ -341,7 +341,6 @@ bool StoreUnit::insertStq(MemReqBus &req)
         UpdateSTValid(req.reqData.positionVld, req.addr, req.size, true, req.tag);
         wakeup_su_lu_q->push_back(req);
     }
-
     return inserted;
 }
 

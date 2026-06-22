@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "ELF.h"
+#include "utils/error.h"
 using namespace std;
 #define MEM_DEBUG 0
 
@@ -14,6 +15,7 @@ constexpr static uint64_t MEM_ALIGN = 8;
 
 static int mem_create_bank(void *arg, uint64_t base, uint64_t size);
 static int mem_load(void *arg, uint64_t addr, uint8_t data);
+static bool gAllowTextStore = false;
 
 bool is_text_region(uint64_t addr, uint64_t size);
 extern std::map<uint64_t, uint64_t> text_region;
@@ -106,8 +108,10 @@ struct addr SoftMemory::LoadElf(JsonElement& jsonElement, std::map<uint64_t, uin
     addr_ret.local_mem_addr = 0;
     addr_ret.end_addr = static_cast<uint64_t>(-1);
     std::pair<cb_mem_create, cb_mem_load> memVerify = {mem_create_bank, mem_load};
+    gAllowTextStore = true;
     bool elfLoadRes = elf_load(jsonElement.filename, mem_create_bank, mem_load,
                                this, &addr_ret.start_addr, &addr_ret.sp_addr, argc, argv);
+    gAllowTextStore = false;
     if (elfLoadRes) {
         return addr_ret;
     } else {
@@ -121,7 +125,9 @@ struct addr SoftMemory::LoadElf(JsonElement& jsonElement, std::map<uint64_t, uin
         jsonElement.endAddr = &addr_ret.end_addr;
         jsonElement.execBlockCnt = &execBlockCnt;
         jsonElement.arg = this;
+        gAllowTextStore = true;
         int res = TxtLoadTxt(memVerify, &jsonElement, sysregs, rets);
+        gAllowTextStore = false;
         if (res == 0) {
             fprintf(stderr, "ERROR: Either ELF binary or Json file open fail%s\n", jsonElement.filename);
             exit(-1);
@@ -276,6 +282,12 @@ bool SoftMemory::LookupBank(uint64_t address)
 bool SoftMemory::Store(uint64_t address, uint64_t data, int width)
 {
     // std::cout<<__FUNCTION__<<"addr 0x"<<hex<<address<<", data:"<<data<<", width:"<<dec<<width<<std::endl;
+    ASSERT(gAllowTextStore || !is_text_region(address, width))
+        << "SoftMemory runtime store targets ELF text"
+        << " addr=0x" << std::hex << address
+        << " width=" << std::dec << width
+        << " data=0x" << std::hex << data;
+
     auto storeToBank = [this](uint64_t address, uint64_t data, int width) {
         auto bankIndex = GetBank(address);
         if (bankIndex==addrToBankIndex.end()) {

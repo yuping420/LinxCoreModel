@@ -9,6 +9,8 @@
 
 namespace JCore {
 
+bool is_text_region(uint64_t addr, uint64_t size);
+
 const int GPR_NUM = 24;
 
 struct mem_data {

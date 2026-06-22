@@ -277,10 +277,27 @@ void STAPipe::runE1() {
         e1_inst->Execute();
         uint32_t peCnt = GetSim()->core->configs.stdPeCount + GetSim()->core->configs.simtPeCount;
         MemReqBus req = e1_inst->GenMemReq(peCnt);
-        if (req.vld) {
+        auto sendScalarReq = [this](MemReqBus req) {
             req.realReqCnt = 1;
             req.laneSet.insert(0);
-            sta_req_q[e1_inst->stid]->Write(req);
+            sta_req_q[req.stid]->Write(req);
+        };
+        if (req.vld) {
+            sendScalarReq(req);
+            if (!req.is_load && IsLoadStorePair(req.opcode)) {
+                ASSERT(e1_inst->psrcs_.size() > SRC1_IDX);
+                MemReqBus second = req;
+                second.addr += req.size;
+                second.data = e1_inst->psrcs_[SRC1_IDX]->vecDataVld ?
+                              e1_inst->psrcs_[SRC1_IDX]->vecData.Get(0,
+                                  static_cast<uint32_t>(e1_inst->psrcs_[SRC1_IDX]->width)) :
+                              e1_inst->psrcs_[SRC1_IDX]->data;
+                second.tag = CalTag(second.addr, second.toMtcLsu);
+                second.reqData.Reset();
+                second.mtc_reqData.Reset();
+                second.isCrossCacheLine = AddrCrossCacheline(second.addr, second.size, second.toMtcLsu);
+                sendScalarReq(second);
+            }
         }
     } else {
         bool toMem = e1_inst->accMemInfo != nullptr ? !e1_inst->accMemInfo->local : true;

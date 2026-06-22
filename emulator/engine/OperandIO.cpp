@@ -199,6 +199,24 @@ void SoftCore::GetSrcOperandData(MInstFuncPtr inst, BlockFuncPtr &currentBlock, 
 
 void SoftCore::SetDstOperandData(MInstFuncPtr inst, BlockFuncPtr &currentBlock, uint64_t lane, OperandPtr dst)
 {
+    ASSERT(inst != nullptr && "SetDstOperandData requires an instruction");
+    ASSERT(dst != nullptr) << "SetDstOperandData received null destination"
+        << " pc=0x" << std::hex << inst->pc
+        << " opcode=" << GetOpcodeName(inst->opcode) << "\n"
+        << inst->Dump();
+    bool needsCurrentBlock =
+        dst->type == OperandType::OPD_TLINK || dst->type == OperandType::OPD_ULINK ||
+        dst->type == OperandType::OPD_VTLINK || dst->type == OperandType::OPD_VULINK ||
+        dst->type == OperandType::OPD_VMLINK || dst->type == OperandType::OPD_VNLINK ||
+        dst->type == OperandType::OPD_RO || dst->type == OperandType::OPD_PREDMASK;
+    ASSERT(!needsCurrentBlock || currentBlock != nullptr)
+        << "SetDstOperandData destination requires an active block"
+        << " pc=0x" << std::hex << inst->pc
+        << " opcode=" << GetOpcodeName(inst->opcode)
+        << " dstType=" << GetOperandType(dst->type)
+        << " dstValue=" << std::dec << dst->value << "\n"
+        << inst->Dump();
+
     auto &threadState = threadStatus[inst->threadId];
     switch (dst->width) {
         case OperandWidth::OPDW_W: {
@@ -259,6 +277,15 @@ void SoftCore::SetDstOperandData(MInstFuncPtr inst, BlockFuncPtr &currentBlock, 
             break;
         case OperandType::OPD_RO:
             ASSERT(dst->value < currentBlock->barg.dstATag.size());
+            ASSERT(dst->value < currentBlock->dstData.size())
+                << "RO destination index exceeds block destination data"
+                << " pc=0x" << std::hex << inst->pc
+                << " opcode=" << GetOpcodeName(inst->opcode)
+                << " dstValue=" << std::dec << dst->value
+                << " dstATagSize=" << currentBlock->barg.dstATag.size()
+                << " dstDataSize=" << currentBlock->dstData.size() << "\n"
+                << inst->Dump() << "\n"
+                << currentBlock->Dump();
             currentBlock->dstData[dst->value] = dst->data;
             break;
         case OperandType::OPD_PREDMASK:

@@ -404,8 +404,8 @@ void ResVerifyManager::DumpDeadLockInfo()
 
 void ResVerifyManager::DumpErrorInfo(uint64_t blockId)
 {
-    BlockVerifyPtr refInfo = mRefBlockInfo.Front();
-    BlockVerifyPtr &modelInfo = mModelBlockInfo[blockId];
+    BlockVerifyPtr refInfo = mRefBlockInfo.Empty() ? nullptr : mRefBlockInfo.Front();
+    BlockVerifyPtr modelInfo = (blockId < mModelBlockInfo.size()) ? mModelBlockInfo[blockId] : nullptr;
     std::stringstream oss;
     oss << std::endl;
     oss << "---------------------------------------------------------------------" << std::endl;
@@ -418,10 +418,21 @@ void ResVerifyManager::DumpErrorInfo(uint64_t blockId)
     }
     oss << TAB_1 << "Cycle:" << std::dec << sim->getCycles() << std::endl;
     oss << TAB_1 << "Error BlockID:" << std::dec << blockId << std::endl;
-    oss << TAB_1 << "Ref BPC: 0x" << std::hex << refInfo->bpc << " isPar: " << refInfo->isParBlock << std::endl;
-    oss << TAB_1 << "Model BPC: 0x" << std::hex << modelInfo->bpc << " isPar: " << modelInfo->isParBlock << std::endl;
+    oss << TAB_1 << "Wait cycles:" << std::dec << waitCycles << std::endl;
+    oss << TAB_1 << "Reference queue depth:" << std::dec << mRefBlockInfo.Size() << std::endl;
+    if (refInfo != nullptr) {
+        oss << TAB_1 << "Ref BPC: 0x" << std::hex << refInfo->bpc << " isPar: " << refInfo->isParBlock << std::endl;
+    } else {
+        oss << TAB_1 << "Ref BPC: unavailable (reference queue empty)" << std::endl;
+    }
+    if (modelInfo != nullptr) {
+        oss << TAB_1 << "Model BPC: 0x" << std::hex << modelInfo->bpc << " isPar: " << modelInfo->isParBlock
+            << " completed: " << std::boolalpha << modelInfo->modelCompleted << std::endl;
+    } else {
+        oss << TAB_1 << "Model BPC: unavailable (block id outside model info table)" << std::endl;
+    }
     oss << TAB_1 << "Model Execute Minst:" << std::endl;
-    if (modelInfo->isParBlock) {
+    if (modelInfo != nullptr && modelInfo->isParBlock) {
         ROBID robId;
         robId.val = blockId;
         for (uint32_t stid = 0; stid < sim->core->configs.scalar_smt_thread; ++stid) {
@@ -433,20 +444,24 @@ void ResVerifyManager::DumpErrorInfo(uint64_t blockId)
         oss << TAB_2 << "Total Group Num:" << std::dec << modelInfo->groupNum << ", completed:" <<
             modelInfo->completedGroupNum << std::endl;
     }
-    if (!modelInfo->instVerifyInfoList.empty()) {
+    if (modelInfo != nullptr && !modelInfo->instVerifyInfoList.empty()) {
         InstVerifyInfo modelInst = modelInfo->instVerifyInfoList.front();
         sim->printInst(modelInfo->bpc, modelInst.tpc, oss);
         oss << TAB_3 << "TPC 0x" << std::hex << modelInst.tpc << ", opcode: " <<
             GetOpcodeName(modelInst.opcode) << ", data: 0x" << modelInst.data << std::endl;
+    } else if (modelInfo == nullptr) {
+        oss << TAB_3 << "Model block info unavailable" << std::endl;
     } else {
         oss << TAB_3 << "Model inst list empty" << std::endl;
     }
     oss << TAB_1 << "Reference Execute Minst:" << std::endl;
-    if (!refInfo->instVerifyInfoList.empty()) {
+    if (refInfo != nullptr && !refInfo->instVerifyInfoList.empty()) {
         InstVerifyInfo refInst = refInfo->instVerifyInfoList.front();
         sim->printInst(refInfo->bpc, refInst.tpc, oss);
         oss << TAB_3 << "TPC 0x" << std::hex << refInst.tpc << ", opcode: " <<
             GetOpcodeName(refInst.opcode) << ", data: 0x" << refInst.data << std::endl;
+    } else if (refInfo == nullptr) {
+        oss << TAB_3 << "Reference block info unavailable" << std::endl;
     } else {
         oss << TAB_3 << "Reference inst list empty" << std::endl;
     }

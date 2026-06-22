@@ -1071,7 +1071,9 @@ void LDQInfo::updateSCBHitInfo(MemReqBus &bus)
 
         if (e.memReq.addr == bus.addr && e.IsWorking() && e.memReq.bid == bus.bid && e.memReq.gid == bus.gid &&
             e.memReq.lsID == bus.lsID) {
-            e.memReq.reqData.mergePosition(bus.reqData);
+            if (bus.data_vld) {
+                e.memReq.reqData.merge(bus.reqData);
+            }
             e.storeBypass = bus.data_vld && checkDataPosionValid(e.memReq.addr, e.memReq.size, e.memReq.reqData);
             if (e.storeBypass)
                 e.fsm = LDQ_WAIT;
@@ -1142,7 +1144,7 @@ void LDQInfo::updateWaitInfo(MemReqBus &bus)
                     << bus.wait_bid << ":T" << bus.wait_rid;
             }
             if (bus.data_vld) {
-                e.memReq.reqData.mergePosition(bus.reqData);
+                e.memReq.reqData.merge(bus.reqData);
                 e.storeBypass = checkDataPosionValid(e.memReq.addr, e.memReq.size, e.memReq.reqData);
             }
             if (e.storeBypass) {
@@ -1966,7 +1968,7 @@ void LDQInfo::handleSUWakeup(MemReqBus &bus)
 
             if ((e.fsm == LDQ_L1_DC_MISS || e.fsm == LDQ_L2_WAIT) && bus.tag == e.memReq.tag &&
                 LessEqual(bus.bid, bus.lsID, e.memReq.bid, e.memReq.lsID)) {
-                e.memReq.reqData.mergePosition(bus.reqData);
+                e.memReq.reqData.merge(bus.reqData);
                 // TODO: Enable store wakeup TLOAD
                 // if (e.memReq.IsTileLS()) {
                 //     ASSERT(0 && "Not support store wakeup TLOAD");
@@ -2000,8 +2002,8 @@ void LDQInfo::handleSCBWakeup(MemReqBus &bus)
                 // if (e.memReq.IsTileLS()) {
                 //     ASSERT(0 && "SCB TLOAD wakeup is not support yet!");
                 // }
-                e.memReq.reqData.mergePosition(bus.reqData);
-                if (checkDataPosionValid(e.memReq.addr, e.memReq.size, bus.reqData)) {
+                e.memReq.reqData.merge(bus.reqData);
+                if (checkDataPosionValid(e.memReq.addr, e.memReq.size, e.memReq.reqData)) {
                     e.storeBypass = true;
                     e.fsm = LDQ_WAIT;
                     LOG_INFO_M(Unit::LSU, Stage::NA) << "Waiting load request is waken up by SCB. Requst: "<< e.memReq;

@@ -8,6 +8,27 @@ namespace JCore {
 
 using namespace std;
 
+namespace {
+
+bool IsScalarLocalLink(OperandType type)
+{
+    return type == OperandType::OPD_TLINK || type == OperandType::OPD_ULINK;
+}
+
+void WakeupScalarLocalLinks(IEX *top, const SimInst &inst)
+{
+    PLpvInfo lpvInfo = inst->GetLpv();
+    for (auto pdst : inst->pdsts_) {
+        if (!IsScalarLocalLink(pdst->type)) {
+            continue;
+        }
+        top->iq.WakeupIQTag(WakeupInfo(pdst->type, pdst->ptag, pdst->recycled),
+            lpvInfo, inst->peID, inst->tid, inst->stid);
+    }
+}
+
+} // namespace
+
 void LDAPipe::Build(uint32_t id) {
     pipeid = id;
 
@@ -380,6 +401,7 @@ void LDAPipe::runW2() {
         tid = w2_inst->stid;
     }
     rslv_array[w2_inst->peID][tid]->Write(rslv);
+    WakeupScalarLocalLinks(top, w2_inst);
 }
 
 void LDAPipe::LogPrint()

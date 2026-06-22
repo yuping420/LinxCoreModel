@@ -18,8 +18,17 @@
 
 %simm_4_15_and_23_27_and_36_47  4:s12 23:5 36:12
 %simm_6_10_and_23_27_and_41_47  6:s5 23:5 41:7
+%simm_6_10_and_23_27_and_41_47_shift_1  6:s5 23:5 41:7 !function=ExShift1
+%simm_6_10_and_23_27_and_41_47_shift_2  6:s5 23:5 41:7 !function=ExShift2
+%simm_6_10_and_23_27_and_41_47_shift_3  6:s5 23:5 41:7 !function=ExShift3
 %simm_6_15_and_23_27_and_41_47  6:s10 23:5 41:7
+%simm_6_15_and_23_27_and_41_47_shift_1  6:s10 23:5 41:7 !function=ExShift1
+%simm_6_15_and_23_27_and_41_47_shift_2  6:s10 23:5 41:7 !function=ExShift2
+%simm_6_15_and_23_27_and_41_47_shift_3  6:s10 23:5 41:7 !function=ExShift3
 %simm_11_15_and_23_27_and_41_47 11:s5 23:5 41:7
+%simm_11_15_and_23_27_and_41_47_shift_1 11:s5 23:5 41:7 !function=ExShift1
+%simm_11_15_and_23_27_and_41_47_shift_2 11:s5 23:5 41:7 !function=ExShift2
+%simm_11_15_and_23_27_and_41_47_shift_3 11:s5 23:5 41:7 !function=ExShift3
 
 %shamt_23_27          23:5
 %shamt_41_47          41:7
@@ -97,26 +106,59 @@
                                                                                             src1=%SrcL src1Type=0 \
                                                                                             dst0=%RegDst0_23_27 dst0Type=0 \
                                                                                             dst1=%RegDst1_11_15 dst1Type=0
-@store_si       ....... ..... ..... ... ..... ... ... . .......... .. ... .     &InstInfo   src0=%simm_6_15_and_23_27_and_41_47 src0Type=1 \
-                                                                                            src1=%SrcL src1Type=0 \
-                                                                                            src2=%SrcR src2Type=0
+@store_si       ....... ..... ..... ... ..... ... ... . .......... .. ... .     &InstInfo   src0=%SrcL src0Type=0 \
+                                                                                            src1=%SrcR src1Type=0 \
+                                                                                            src2=%simm_6_15_and_23_27_and_41_47 src2Type=1
+@store_si_s1    ....... ..... ..... ... ..... ... ... . .......... .. ... .     &InstInfo   src0=%SrcL src0Type=0 \
+                                                                                            src1=%SrcR src1Type=0 \
+                                                                                            src2=%simm_6_15_and_23_27_and_41_47_shift_1 src2Type=1
+@store_si_s2    ....... ..... ..... ... ..... ... ... . .......... .. ... .     &InstInfo   src0=%SrcL src0Type=0 \
+                                                                                            src1=%SrcR src1Type=0 \
+                                                                                            src2=%simm_6_15_and_23_27_and_41_47_shift_2 src2Type=1
+@store_si_s3    ....... ..... ..... ... ..... ... ... . .......... .. ... .     &InstInfo   src0=%SrcL src0Type=0 \
+                                                                                            src1=%SrcR src1Type=0 \
+                                                                                            src2=%simm_6_15_and_23_27_and_41_47_shift_3 src2Type=1
 @store_shift    ..... .. ..... ..... ... ..... ... ... . ..... ..... .. ... .   &InstInfo   src0=%SrcD1 src0Type=0 \
                                                                                             src1=%SrcL src1Type=0 \
                                                                                             src2=%SrcR src2Type=0 \
                                                                                             src3=%SrcRType src3Type=2 \
                                                                                             src4=%SrcD0 src4Type=0
-@store_si2      ....... ..... ..... ... ..... ... ... . ..... ..... .. ... .    &InstInfo   src0=%SrcD1 src0Type=0 \
-                                                                                            src1=%simm_11_15_and_23_27_and_41_47 src1Type=1 \
-                                                                                            src2=%SrcL src2Type=0 \
-                                                                                            src3=%SrcR src3Type=0
+@store_si2      ....... ..... ..... ... ..... ... ... . ..... ..... .. ... .    &InstInfo   src0=%SrcL src0Type=0 \
+                                                                                            src1=%SrcD1 src1Type=0 \
+                                                                                            src2=%SrcR src2Type=0 \
+                                                                                            src3=%simm_11_15_and_23_27_and_41_47 src3Type=1
+@store_si2_s1   ....... ..... ..... ... ..... ... ... . ..... ..... .. ... .    &InstInfo   src0=%SrcL src0Type=0 \
+                                                                                            src1=%SrcD1 src1Type=0 \
+                                                                                            src2=%SrcR src2Type=0 \
+                                                                                            src3=%simm_11_15_and_23_27_and_41_47_shift_1 src3Type=1
+@store_si2_s2   ....... ..... ..... ... ..... ... ... . ..... ..... .. ... .    &InstInfo   src0=%SrcL src0Type=0 \
+                                                                                            src1=%SrcD1 src1Type=0 \
+                                                                                            src2=%SrcR src2Type=0 \
+                                                                                            src3=%simm_11_15_and_23_27_and_41_47_shift_2 src3Type=1
+@store_si2_s3   ....... ..... ..... ... ..... ... ... . ..... ..... .. ... .    &InstInfo   src0=%SrcL src0Type=0 \
+                                                                                            src1=%SrcD1 src1Type=0 \
+                                                                                            src2=%SrcR src2Type=0 \
+                                                                                            src3=%simm_11_15_and_23_27_and_41_47_shift_3 src3Type=1
 @store_shift2   ..... .. ..... ..... ... ..... ... ... . ..... ..... .. ... .   &InstInfo   src0=%SrcL src0Type=0 \
                                                                                             src1=%SrcR src1Type=0 \
                                                                                             src2=%SrcRType src2Type=2 \
                                                                                             src3=%SrcD0 src3Type=0 \
                                                                                             dst0=%RegDst1_11_15 dst0Type=0
-@store_si3      ....... ..... ..... ... ..... ... ... . ..... ..... .. ... .    &InstInfo   src0=%simm_6_10_and_23_27_and_41_47 src0Type=1 \
-                                                                                            src1=%SrcL src1Type=0 \
-                                                                                            src2=%SrcR src2Type=0 \
+@store_si3      ....... ..... ..... ... ..... ... ... . ..... ..... .. ... .    &InstInfo   src0=%SrcL src0Type=0 \
+                                                                                            src1=%SrcR src1Type=0 \
+                                                                                            src2=%simm_6_10_and_23_27_and_41_47 src2Type=1 \
+                                                                                            dst0=%RegDst1_11_15 dst0Type=0
+@store_si3_s1   ....... ..... ..... ... ..... ... ... . ..... ..... .. ... .    &InstInfo   src0=%SrcL src0Type=0 \
+                                                                                            src1=%SrcR src1Type=0 \
+                                                                                            src2=%simm_6_10_and_23_27_and_41_47_shift_1 src2Type=1 \
+                                                                                            dst0=%RegDst1_11_15 dst0Type=0
+@store_si3_s2   ....... ..... ..... ... ..... ... ... . ..... ..... .. ... .    &InstInfo   src0=%SrcL src0Type=0 \
+                                                                                            src1=%SrcR src1Type=0 \
+                                                                                            src2=%simm_6_10_and_23_27_and_41_47_shift_2 src2Type=1 \
+                                                                                            dst0=%RegDst1_11_15 dst0Type=0
+@store_si3_s3   ....... ..... ..... ... ..... ... ... . ..... ..... .. ... .    &InstInfo   src0=%SrcL src0Type=0 \
+                                                                                            src1=%SrcR src1Type=0 \
+                                                                                            src2=%simm_6_10_and_23_27_and_41_47_shift_3 src2Type=1 \
                                                                                             dst0=%RegDst1_11_15 dst0Type=0
 @load_pcr       ................. ... ..... ... ... . ............ ... .        &InstInfo   src0=%simm_4_15_and_31_47 src0Type=1 \
                                                                                             dst0=%RegDst0_23_27 dst0Type=0
@@ -309,9 +351,9 @@ LHUI_UPO     ............ ..... 101 ..... 010 100 1 ..... ..... 11 111 0     @lo
 LWUI_UPO     ............ ..... 110 ..... 010 100 1 ..... ..... 11 111 0     @load_si2
 
 SBI          ....... ..... ..... 000 ..... 101 100 1 .......... 00 111 0     @store_si
-SHI          ....... ..... ..... 001 ..... 101 100 1 .......... 00 111 0     @store_si
-SWI          ....... ..... ..... 010 ..... 101 100 1 .......... 00 111 0     @store_si
-SDI          ....... ..... ..... 011 ..... 101 100 1 .......... 00 111 0     @store_si
+SHI          ....... ..... ..... 001 ..... 101 100 1 .......... 00 111 0     @store_si_s1
+SWI          ....... ..... ..... 010 ..... 101 100 1 .......... 00 111 0     @store_si_s2
+SDI          ....... ..... ..... 011 ..... 101 100 1 .......... 00 111 0     @store_si_s3
 SHI_U        ....... ..... ..... 101 ..... 101 100 1 .......... 00 111 0     @store_si
 SWI_U        ....... ..... ..... 110 ..... 101 100 1 .......... 00 111 0     @store_si
 SDI_U        ....... ..... ..... 111 ..... 101 100 1 .......... 00 111 0     @store_si
@@ -325,9 +367,9 @@ SWP_U        ..... .. ..... ..... 110 00000 100 100 1 00000 ..... 01 111 0   @st
 SDP_U        ..... .. ..... ..... 111 00000 100 100 1 00000 ..... 01 111 0   @store_shift
 
 SBIP         ....... ..... ..... 000 ..... 101 100 1 ..... ..... 01 111 0    @store_si2
-SHIP         ....... ..... ..... 001 ..... 101 100 1 ..... ..... 01 111 0    @store_si2
-SWIP         ....... ..... ..... 010 ..... 101 100 1 ..... ..... 01 111 0    @store_si2
-SDIP         ....... ..... ..... 011 ..... 101 100 1 ..... ..... 01 111 0    @store_si2
+SHIP         ....... ..... ..... 001 ..... 101 100 1 ..... ..... 01 111 0    @store_si2_s1
+SWIP         ....... ..... ..... 010 ..... 101 100 1 ..... ..... 01 111 0    @store_si2_s2
+SDIP         ....... ..... ..... 011 ..... 101 100 1 ..... ..... 01 111 0    @store_si2_s3
 SHIP_U       ....... ..... ..... 101 ..... 101 100 1 ..... ..... 01 111 0    @store_si2
 SWIP_U       ....... ..... ..... 110 ..... 101 100 1 ..... ..... 01 111 0    @store_si2
 SDIP_U       ....... ..... ..... 111 ..... 101 100 1 ..... ..... 01 111 0    @store_si2
@@ -342,9 +384,9 @@ SW_UPR       ..... .. ..... ..... 110 00000 100 100 1 ..... 00000 10 111 0   @st
 SD_UPR       ..... .. ..... ..... 111 00000 100 100 1 ..... 00000 10 111 0   @store_shift2
 
 SBI_PR       ....... ..... ..... 000 ..... 101 100 1 ..... ..... 10 111 0    @store_si3
-SHI_PR       ....... ..... ..... 001 ..... 101 100 1 ..... ..... 10 111 0    @store_si3
-SWI_PR       ....... ..... ..... 010 ..... 101 100 1 ..... ..... 10 111 0    @store_si3
-SDI_PR       ....... ..... ..... 011 ..... 101 100 1 ..... ..... 10 111 0    @store_si3
+SHI_PR       ....... ..... ..... 001 ..... 101 100 1 ..... ..... 10 111 0    @store_si3_s1
+SWI_PR       ....... ..... ..... 010 ..... 101 100 1 ..... ..... 10 111 0    @store_si3_s2
+SDI_PR       ....... ..... ..... 011 ..... 101 100 1 ..... ..... 10 111 0    @store_si3_s3
 
 SHI_UPR      ....... ..... ..... 101 ..... 101 100 1 ..... ..... 10 111 0    @store_si3
 SWI_UPR      ....... ..... ..... 110 ..... 101 100 1 ..... ..... 10 111 0    @store_si3
@@ -360,9 +402,9 @@ SW_UPO       ..... .. ..... ..... 110 00000 100 100 1 ..... 00000 11 111 0   @st
 SD_UPO       ..... .. ..... ..... 111 00000 100 100 1 ..... 00000 11 111 0   @store_shift2
 
 SBI_PO       ....... ..... ..... 000 ..... 101 100 1 ..... ..... 11 111 0    @store_si3
-SHI_PO       ....... ..... ..... 001 ..... 101 100 1 ..... ..... 11 111 0    @store_si3
-SWI_PO       ....... ..... ..... 010 ..... 101 100 1 ..... ..... 11 111 0    @store_si3
-SDI_PO       ....... ..... ..... 011 ..... 101 100 1 ..... ..... 11 111 0    @store_si3
+SHI_PO       ....... ..... ..... 001 ..... 101 100 1 ..... ..... 11 111 0    @store_si3_s1
+SWI_PO       ....... ..... ..... 010 ..... 101 100 1 ..... ..... 11 111 0    @store_si3_s2
+SDI_PO       ....... ..... ..... 011 ..... 101 100 1 ..... ..... 11 111 0    @store_si3_s3
 
 SHI_UPO      ....... ..... ..... 101 ..... 101 100 1 ..... ..... 11 111 0    @store_si3
 SWI_UPO      ....... ..... ..... 110 ..... 101 100 1 ..... ..... 11 111 0    @store_si3

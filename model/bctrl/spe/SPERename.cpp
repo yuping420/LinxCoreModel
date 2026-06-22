@@ -384,7 +384,9 @@ bool SPERename::InsertToStoreIEX(SimInst inst)
 {
     auto &staDispatchQ = top->pe_iex_sta_array[inst->peID];
     auto &stdDispatchQ = top->pe_iex_std_array[inst->peID];
-    if (inst->storeSplit || inst->stack_type == StackInstType::STACK_SET) {
+    const bool splitStore = (inst->storeSplit || inst->stack_type == StackInstType::STACK_SET) &&
+                            !IsLoadStorePair(inst->opcode);
+    if (splitStore) {
         if (staDispatchQ->getStall() || stdDispatchQ->getStall()) {
             return false;
         }

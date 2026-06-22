@@ -460,6 +460,11 @@ void ReadyState::checkRslv(SimInst &inst, std::string &dispInfo)
         OpcodeIsBDIM(inst->opcode) || (top->core->configs.enable_cmd_isq && OpcodeIsCMD(inst->opcode))) {
         return;
     }
+    for (auto pdst : inst->pdsts_) {
+        if (pdst->type == OperandType::OPD_TLINK || pdst->type == OperandType::OPD_ULINK) {
+            return;
+        }
+    }
 
     if (inst->RangedDataReady()) {
         inst->Execute();

@@ -308,7 +308,7 @@ void L1Clusters::handleSCBLookup(MemReqBus &bus, bool checkOnly)
             top->tag_scb_lu_q[bus.stid]->push_back(bus);
         }
     } else {
-        if (bus.stid != -1U) {
+        if (bus.stid == -1U) {
             for (auto &q : top->lookup_scb_lu_q) {
                 q->push_back(bus);
             }

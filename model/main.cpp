@@ -3,6 +3,7 @@
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
+#include <execinfo.h>
 #include <iomanip>
 #include <iostream>
 #include <sysexits.h>
@@ -19,6 +20,27 @@
 
 using namespace std;
 using namespace JCore;
+
+namespace {
+
+void PrintFatalSignalBacktrace(int signal)
+{
+    void *frames[64];
+    int frameCount = backtrace(frames, 64);
+    dprintf(STDERR_FILENO, "\nFATAL: gfsim received signal %d\n", signal);
+    backtrace_symbols_fd(frames, frameCount, STDERR_FILENO);
+    std::signal(signal, SIG_DFL);
+    raise(signal);
+}
+
+void InstallFatalSignalHandlers()
+{
+    std::signal(SIGSEGV, PrintFatalSignalBacktrace);
+    std::signal(SIGBUS, PrintFatalSignalBacktrace);
+    std::signal(SIGILL, PrintFatalSignalBacktrace);
+}
+
+}
 
 static int ParseCommandLine(int argc, char **argv, struct CommandLineArgs& args)
 {
@@ -346,6 +368,8 @@ static void RunSimulation(const shared_ptr<SimSys>& sim, CommandLineArgs& args)
 //-----------------------------------------------------------------
 int main(int argc, char *argv[])
 {
+    InstallFatalSignalHandlers();
+
     struct CommandLineArgs args;
 
     int errCode = ParseCommandLine(argc, argv, args);

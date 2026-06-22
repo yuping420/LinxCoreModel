@@ -61,8 +61,8 @@ static bool CalcStorePRAddr(MInst &inst)
     if (inst.srcs.size() != SRC3_IDX || inst.dsts.size() != DST1_IDX) {
         return false;
     }
-    inst.accMemInfo->accMemAddr = inst.srcs[SRC0_IDX]->data + inst.srcs[SRC1_IDX]->data;
-    inst.dsts[DST0_IDX]->data = inst.srcs[SRC0_IDX]->data + inst.srcs[SRC1_IDX]->data;
+    inst.accMemInfo->accMemAddr = inst.srcs[SRC1_IDX]->data + inst.srcs[SRC2_IDX]->data;
+    inst.dsts[DST0_IDX]->data = inst.srcs[SRC1_IDX]->data + inst.srcs[SRC2_IDX]->data;
     return true;
 }
 

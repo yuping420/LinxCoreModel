@@ -11,6 +11,27 @@ using namespace std;
 constexpr uint32_t IEX_ALU_DEFAULT_EX_STAGE_NUM = 1;
 constexpr uint32_t IEX_ALU_VEC_EX_STAGE_NUM = 5; // latency=6: E1-E5
 
+namespace {
+
+bool IsScalarLocalLink(OperandType type)
+{
+    return type == OperandType::OPD_TLINK || type == OperandType::OPD_ULINK;
+}
+
+void WakeupDstTags(IEX *top, const SimInst &inst, bool scalarLocalLinkOnly)
+{
+    PLpvInfo lpvInfo = inst->GetLpv();
+    for (auto pdst : inst->pdsts_) {
+        if (IsScalarLocalLink(pdst->type) != scalarLocalLinkOnly) {
+            continue;
+        }
+        top->iq.WakeupIQTag(WakeupInfo(pdst->type, pdst->ptag, pdst->recycled),
+            lpvInfo, inst->peID, inst->tid, inst->stid);
+    }
+}
+
+} // namespace
+
 void ALUPipe::Build(uint32_t id) {
     pipeid = id;
 
@@ -318,11 +339,7 @@ void ALUPipe::runI1() {
     const uint32_t latency = i1_inst->iexLatency + getIterCycles(i1_inst);
     constexpr uint32_t I1_WKUP_LATENCY = 2;
     if (latency == I1_WKUP_LATENCY) {
-        PLpvInfo lpvInfo = i1_inst->GetLpv();
-        for (auto pdst : i1_inst->pdsts_) {
-            top->iq.WakeupIQTag(WakeupInfo(pdst->type, pdst->ptag, pdst->recycled),
-                lpvInfo, i1_inst->peID, i1_inst->tid, i1_inst->stid);
-        }
+        WakeupDstTags(top, i1_inst, false);
     }
 }
 
@@ -344,11 +361,7 @@ void ALUPipe::runI2() {
     const uint32_t latency = i2_inst->iexLatency + getIterCycles(i2_inst);
     constexpr uint32_t I2_WKUP_LATENCY = 3;
     if (latency == I2_WKUP_LATENCY) {
-        PLpvInfo lpvInfo = i2_inst->GetLpv();
-        for (auto pdst : i2_inst->pdsts_) {
-            top->iq.WakeupIQTag(WakeupInfo(pdst->type, pdst->ptag, pdst->recycled),
-                lpvInfo, i2_inst->peID, i2_inst->tid, i2_inst->stid);
-        }
+        WakeupDstTags(top, i2_inst, false);
     }
 
     if (!sys_data_ret.vld) {
@@ -365,11 +378,7 @@ void ALUPipe::runE0()
         const uint32_t latency = inst->iexLatency + iter_cycles;
         constexpr uint32_t E0_WKUP_LATENCY = 4;
         if (latency == E0_WKUP_LATENCY) {
-            PLpvInfo lpvInfo = inst->GetLpv();
-            for (auto pdst : inst->pdsts_) {
-                top->iq.WakeupIQTag(WakeupInfo(pdst->type, pdst->ptag, pdst->recycled),
-                    lpvInfo, inst->peID, inst->tid, inst->stid);
-            }
+            WakeupDstTags(top, inst, false);
         }
     }
 }
@@ -429,11 +438,7 @@ void ALUPipe::runEx(Stage stage)
         const uint32_t latency = inst->iexLatency;
         constexpr uint32_t EX_WKUP_LATENCY_OFST = 4;
         if (latency == (idx + EX_WKUP_LATENCY_OFST)) {
-            PLpvInfo lpvInfo = inst->GetLpv();
-            for (auto pdst : inst->pdsts_) {
-                top->iq.WakeupIQTag(WakeupInfo(pdst->type, pdst->ptag, pdst->recycled),
-                    lpvInfo, inst->peID, inst->tid, inst->stid);
-            }
+            WakeupDstTags(top, inst, false);
         }
 
         if ((inst->iexLatency - 1) == (idx + 1)) {
@@ -531,6 +536,7 @@ void ALUPipe::runW2() {
             tid = inst->stid;
         }
         rslv_array[inst->peID][tid]->Write(rslv);
+        WakeupDstTags(top, inst, true);
 
         req_cnt += 1;
     }

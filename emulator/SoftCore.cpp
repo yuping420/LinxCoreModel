@@ -71,8 +71,8 @@ MInstFuncPtr SoftCore::FetchDecodeInst(uint64_t fetchPc, uint64_t threadID)
     uint64_t bin = 0;
 
     // PreCheck inst Size
-    bin = memory->Load(fetchPc, WIDTH_16, false);
-    size = CheckMInstSize(bin);
+    uint64_t probe16 = memory->Load(fetchPc, WIDTH_16, false);
+    size = CheckMInstSize(probe16);
     bin = memory->Load(fetchPc, size, false);
 
     inst->DecodeBin(bin, size);

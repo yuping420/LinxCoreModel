@@ -1168,6 +1168,10 @@ void IEX::setMemWakeup(MemReqBus const &mem) {
     if (inst->wakeupCnt >= mem.realReqCnt) {
         inst->loadWakeuped = true;
         for (auto &pdst : inst->pdsts_) {
+            if (mem.specWakeup &&
+                (pdst->type == OperandType::OPD_TLINK || pdst->type == OperandType::OPD_ULINK)) {
+                continue;
+            }
             iq.WakeupIQTag(WakeupInfo(pdst->type, pdst->ptag, pdst->recycled), lpvInfo, inst->peID,
                 inst->tid, inst->stid);
         }
