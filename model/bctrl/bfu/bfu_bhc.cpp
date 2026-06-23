@@ -85,7 +85,7 @@ bool BHC::fetch(PtrFB const& fb) {
             } else {
                 // add to missq
                 if (pa_cl != 0) {
-                    missq.emplace_back(va_cl, pa_cl, false, fb->stid, bfu->GetSim()->getCycles());
+                    missq.emplace_back(va_cl, pa_cl, fb->stid, false, bfu->GetSim()->getCycles());
                     if (cfg->debug_enable) {
                         LOG_INFO_M(Unit::BFU, Stage::F2) << dec << " miss missq, fbid=" << fb->fbid
                             << " local fbid=" << fb->fbid_local << hex << " va=0x" << dec << " size="
@@ -124,7 +124,7 @@ bool BHC::prefetch(PtrHWPFInfo const& pfi) {
             if (missq.size() >= cfg->bhc_pf_nostd) {
                 logger->debug("BHC", F2, "drop prefetch due to missq capacity, va=0x%llx, pa=0x%llx\n", pfi->va, pfi->pa);
             } else if (utils->AlignToCL(pfi->pa) != 0) {
-                missq.emplace_back(utils->AlignToCL(pfi->va), utils->AlignToCL(pfi->pa), true, pfi->stid,
+                missq.emplace_back(utils->AlignToCL(pfi->va), utils->AlignToCL(pfi->pa), pfi->stid, true,
                     bfu->GetSim()->getCycles());
                 logger->debug("BHC", F2, "add prefetch to missq, va=0x%llx, pa=0x%llx, size=%d\n", pfi->va, pfi->pa, missq.size());
             }
