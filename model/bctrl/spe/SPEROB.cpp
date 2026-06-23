@@ -819,6 +819,8 @@ void SPEROB::commit()
                 if (inst->accMemInfo && inst->psrcs_.size() > dataSrc) {
                     GetSim()->observeTestFinisher(inst->accMemInfo->accMemAddr, inst->psrcs_[dataSrc]->data,
                                                   GetLoadStoreBytes(inst->opcode));
+                    GetSim()->observeUartWrite(inst->accMemInfo->accMemAddr, inst->psrcs_[dataSrc]->data,
+                                               GetLoadStoreBytes(inst->opcode));
                 }
         }
 

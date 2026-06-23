@@ -4,6 +4,7 @@
 #include <list>
 #include <queue>
 #include <set>
+#include <string>
 #include <vector>
 #include "../emulator/Memory.h"
 #include "../emulator/SoftCore.h"
@@ -121,6 +122,7 @@ public:
     bool                    testFinisherFailed = false;
     uint64_t                testFinisherValue = 0;
     uint32_t                testFinisherByteMask = 0;
+    std::string             uartLineBuffer;
 
     std::vector<bool>                    terminate;
 
@@ -194,6 +196,7 @@ public:
     uint64_t                loadData(uint64_t address, int width, bool signedLoad);
     void                    storeData(uint64_t address, uint64_t data, int width);
     void                    observeTestFinisher(uint64_t address, uint64_t data, int width);
+    void                    observeUartWrite(uint64_t address, uint64_t data, int width);
 
     // utilities
     uint64_t                getCycles() { return cycles; }

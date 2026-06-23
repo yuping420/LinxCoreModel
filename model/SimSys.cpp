@@ -18,6 +18,7 @@ namespace JCore {
 namespace {
 constexpr uint64_t kLinxTestFinisherAddr = 0x10009000;
 constexpr uint16_t kLinxTestFinisherPass = 0x5555;
+constexpr uint64_t kLinxUartDataAddr = 0x10000000;
 }
 
 void SimSys::step() {
@@ -595,6 +596,27 @@ void SimSys::observeTestFinisher(uint64_t address, uint64_t data, int width)
     }
 }
 
+void SimSys::observeUartWrite(uint64_t address, uint64_t data, int width)
+{
+    if (address > kLinxUartDataAddr || address + static_cast<uint64_t>(width) <= kLinxUartDataAddr) {
+        return;
+    }
+
+    const uint64_t offset = kLinxUartDataAddr - address;
+    const char ch = static_cast<char>((data >> (offset * 8)) & 0xFF);
+    if (ch == '\r' || ch == '\n') {
+        if (!uartLineBuffer.empty()) {
+            cout << "linx_uart: " << uartLineBuffer << endl;
+            uartLineBuffer.clear();
+        }
+        return;
+    }
+
+    if (ch == '\t' || (ch >= 0x20 && ch <= 0x7E)) {
+        uartLineBuffer.push_back(ch);
+    }
+}
+
 bool SimSys::buildSystem() {
     core = std::make_shared<Core>();
     addModule(core);
@@ -683,6 +705,7 @@ uint64_t SimSys::loadData(uint64_t address, int width, bool signedLoad) {
 
 void SimSys::storeData(uint64_t address, uint64_t data, int width) {
     observeTestFinisher(address, data, width);
+    observeUartWrite(address, data, width);
     // change to byte aaccelss to avoid cross section
     for (int i = 0; i <width; i++) {
         memory.Store(address+i, (data>>(i*8))&0xFF, 1);
