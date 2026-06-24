@@ -2,6 +2,7 @@ import os
 import csv
 import argparse
 import sys
+import time
 
 argp = argparse.ArgumentParser(description="Generate Block_id & cycle csv")
 argp.add_argument("-i", "--input", default=".", type=str)
