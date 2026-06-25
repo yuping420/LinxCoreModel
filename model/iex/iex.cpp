@@ -1234,10 +1234,27 @@ void IEX::setMemData(MemReqBus const &mem) {
         retLane = rob_next.resolveData(mem, lane, mem.simtMask);
     }
 
+    SimInst &robInst = rob_next[mem.rid.val].inst;
+    const bool scalarLoadPair = IsScalarInst(robInst->codeLen) &&
+                                OpcodeIsLoad(robInst->opcode) &&
+                                IsLoadStorePair(robInst->opcode);
+    if (scalarLoadPair) {
+        for (auto lane : mem.laneSet) {
+            ASSERT(lane < robInst->pdsts_.size());
+            robInst->pdsts_[lane]->data = mem.data;
+            robInst->pdsts_[lane]->dataVld = true;
+        }
+        if (retLane < mem.realReqCnt) {
+            return;
+        }
+    }
+
     // Retrieve SimInst
-    SimInst inst = std::make_shared<SimInstInfo>(*rob_next[mem.rid.val].inst);
-    for (auto &pdst : inst->pdsts_) {
-        pdst->data = mem.data;
+    SimInst inst = std::make_shared<SimInstInfo>(*robInst);
+    if (!scalarLoadPair) {
+        for (auto &pdst : inst->pdsts_) {
+            pdst->data = mem.data;
+        }
     }
 
     if ((core->IsVectorIex(inst->iexType) || (inst->iexType == MEM_IEX)) && inst->lanes > 0) {

@@ -334,13 +334,19 @@ void HandleSta(SimInst &sta)
     // 目前在解码阶段，已经将全部store 类指令的 srcD 放在了src0
     // 设置成 sta 0 [addr]
     // 避免后续 Execute 的时候拿错地址
-    sta->psrcs_[0] = std::make_shared<PhysicalOperand>(*std::make_shared<Operand>(OperandType::OPD_ZERO, 0));
-    sta->srcs[0] = sta->psrcs_[0];
+    size_t copySrcBegin = 1;
+    if (!OpcodeIsStorePCR(sta->opcode)) {
+        sta->psrcs_[0] = std::make_shared<PhysicalOperand>(*std::make_shared<Operand>(OperandType::OPD_ZERO, 0));
+        sta->srcs[0] = sta->psrcs_[0];
+    } else {
+        // PCR stores use src0 as the PC-relative address immediate and src1 as data.
+        copySrcBegin = 0;
+    }
     // 深拷贝，后续 wakeup 的时候避免movelpv出问题
     sta->accMemInfo = std::make_shared<AaccelssMemInfo>(*sta->accMemInfo);
     ASSERT(sta->psrcs_.size() == sta->srcs.size() && "PSrc is not equal to src, may need to check decode");
     // 这样复制是因为 SimInst 继承自 MInst，但是同事
-    for (size_t i = 1; i < sta->psrcs_.size(); ++i) {
+    for (size_t i = copySrcBegin; i < sta->psrcs_.size(); ++i) {
         auto &psrc = sta->psrcs_[i];
         auto &src = sta->srcs[i];
         auto srcPtr = std::make_shared<Operand>(*src);

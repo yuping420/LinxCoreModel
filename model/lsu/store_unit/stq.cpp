@@ -48,11 +48,8 @@ void STQueueEntryInfo::init(MemReqBus &bus)
                 LOG_ERROR_M(Unit::LSU, Stage::NA) << "Wait request: " << memStReq << " coming request: " << bus;
                 ASSERT(0 && "memStReq.type != ST_ADDR");
             }
-            addrRdy = true;
             dataRdy = true;
-            memStReq.addr = bus.addr;
             memStReq.data = bus.data;
-            memStReq.tag = bus.tag;
         } else {
             ASSERT("Exceptional store type");
         }
@@ -73,7 +70,7 @@ void STQueueEntryInfo::init(MemReqBus &bus)
             addrRdy = true;
         } else if (bus.type == ST_DATA) {
             dataRdy = true;
-            addrRdy = true;
+            addrRdy = false;
         } else if (bus.type == ST_ADDR) {
             dataRdy = false;
             addrRdy = true;

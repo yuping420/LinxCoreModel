@@ -222,7 +222,11 @@ void LDAPipe::runE1() {
                                                             "LDA execute exception(SCALAR)") : void();
         addr = e1_inst->accMemInfo->accMemAddr;
         addrLaneMap[addr].insert(0);
-        ++e1_inst->realReqCnt;
+        e1_inst->realReqCnt = 1;
+        if (IsLoadStorePair(e1_inst->opcode)) {
+            addrLaneMap[addr + GetLoadStoreBytes(e1_inst->opcode)].insert(1);
+            e1_inst->realReqCnt = 2;
+        }
     } else {
         bool toMem = e1_inst->accMemInfo != nullptr ? !e1_inst->accMemInfo->local : true;
         ASSERT(!toMem);
@@ -334,6 +338,11 @@ void LDAPipe::runE1() {
         if (req.vld) {
             req.simtLane = *it.second.begin();
             req.laneSet = it.second;
+            if (IsScalarInst(e1_inst->codeLen) && IsLoadStorePair(e1_inst->opcode)) {
+                req.addr = it.first;
+                req.tag = CalTag(req.addr, req.toMtcLsu);
+                req.isCrossCacheLine = AddrCrossCacheline(req.addr, req.size, req.toMtcLsu);
+            }
             // TODO: simt iex is not support the speculation wakeup feature
             if (top->GetLsuload_to_use_enable() && !req.stack_vld &&
                 ((!top->core->IsVectorIex(top->machineType)) && (top->id != MEM_IEX))) {
